@@ -1,4 +1,5 @@
 import random
+import math
 
 import pygame
 from circleshape import CircleShape
@@ -9,8 +10,31 @@ class Asteroid(CircleShape):
     def __init__(self, x, y, radius):
         super().__init__(x, y, radius)
 
+        self.points = self._generate_points()
+
+    def _generate_points(self):
+        num_points = random.randint(8, 12)
+        points = []
+
+        for i in range(num_points):
+            angle = (i / num_points) * 2 * math.pi
+            lumpy_radius = self.radius * random.uniform(0.7, 1.0)
+
+            x = lumpy_radius * math.cos(angle)
+            y = lumpy_radius * math.sin(angle)
+            points.append((x, y))
+
+        return points
+
     def draw(self, screen):
-        pygame.draw.circle(screen, "white", self.position, self.radius, LINE_WIDTH)
+        if not hasattr(self, 'points'):
+            self.points = self._generate_points()
+
+        absolute_points = [
+            (self.position.x + px, self.position.y + py)
+            for px, py in self.points
+        ]
+        pygame.draw.polygon(screen, "white", absolute_points, LINE_WIDTH)
 
     def update(self, dt):
         self.position += self.velocity * dt
