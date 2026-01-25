@@ -3,8 +3,17 @@ import math
 
 import pygame
 from circleshape import CircleShape
-from constants import LINE_WIDTH, ASTEROID_MIN_RADIUS, SCREEN_WIDTH, SCREEN_HEIGHT
+from constants import (
+    LINE_WIDTH,
+    ASTEROID_MIN_RADIUS,
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    ASTEROID_SPLIT_MIN_ANGLE,
+    ASTEROID_SPLIT_MAX_ANGLE,
+    ASTEROID_SPLIT_SPEED_MULTIPLIER,
+)
 from logger import log_event
+
 
 class Asteroid(CircleShape):
     def __init__(self, x, y, radius):
@@ -27,12 +36,11 @@ class Asteroid(CircleShape):
         return points
 
     def draw(self, screen):
-        if not hasattr(self, 'points'):
+        if not hasattr(self, "points"):
             self.points = self._generate_points()
 
         absolute_points = [
-            (self.position.x + px, self.position.y + py)
-            for px, py in self.points
+            (self.position.x + px, self.position.y + py) for px, py in self.points
         ]
         pygame.draw.polygon(screen, "white", absolute_points, LINE_WIDTH)
 
@@ -45,16 +53,16 @@ class Asteroid(CircleShape):
 
         if self.radius <= ASTEROID_MIN_RADIUS:
             return
-        
+
         log_event("asteroid_split")
 
-        rand_angle = random.uniform(20, 50)
+        rand_angle = random.uniform(ASTEROID_SPLIT_MIN_ANGLE, ASTEROID_SPLIT_MAX_ANGLE)
 
         new_velocity1 = self.velocity.rotate(rand_angle)
         new_velocity2 = self.velocity.rotate(-rand_angle)
-        
+
         new_radius = self.radius - ASTEROID_MIN_RADIUS
-        asteroid = Asteroid(self.position.x, self.position.y, new_radius)
-        asteroid.velocity = new_velocity1 * 1.2
-        asteroid = Asteroid(self.position.x, self.position.y, new_radius)
-        asteroid.velocity = new_velocity2 * 1.2
+        asteroid1 = Asteroid(self.position.x, self.position.y, new_radius)
+        asteroid1.velocity = new_velocity1 * ASTEROID_SPLIT_SPEED_MULTIPLIER
+        asteroid2 = Asteroid(self.position.x, self.position.y, new_radius)
+        asteroid2.velocity = new_velocity2 * ASTEROID_SPLIT_SPEED_MULTIPLIER
