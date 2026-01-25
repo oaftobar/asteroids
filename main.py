@@ -27,7 +27,8 @@ def main():
 
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
-    dt = 0    
+    dt = 0   
+    score = 0 
 
     while True:
         log_state()
@@ -42,11 +43,13 @@ def main():
             if player.collides_with(asteroid):
                 log_event("player_hit")
                 print("Game over!")
+                print(f"Final score: {score}")
                 sys.exit(0)
 
             for shot in shots:
                 if asteroid.collides_with(shot):
                     log_event("asteroid_shot")
+                    score += 100
                     shot.kill()
                     asteroid.split()
 

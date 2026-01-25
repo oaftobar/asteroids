@@ -6,7 +6,9 @@ from constants import (
     PLAYER_SHOOT_COOLDOWN_SECONDS,
     PLAYER_SHOOT_SPEED, 
     PLAYER_SPEED, 
-    PLAYER_TURN_SPEED, 
+    PLAYER_TURN_SPEED,
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
 )
 from shot import Shot
 
@@ -29,6 +31,7 @@ class Player(CircleShape):
 
     def update(self, dt):
         self.shoot_timer -= dt
+        self.wrap_around(SCREEN_WIDTH, SCREEN_HEIGHT)
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_w]:
