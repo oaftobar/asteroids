@@ -1,5 +1,6 @@
 game_state.jsonl
 game_events.jsonl
+.DS_Store
 
 # Python-generated files
 __pycache__/
