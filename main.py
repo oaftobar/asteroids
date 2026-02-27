@@ -44,6 +44,27 @@ def save_high_score(score, initials):
         pass
 
 
+class GameState:
+    def __init__(self):
+        self.score = 0
+        self.high_score, self.high_score_initials = load_high_score()
+        self.lives = 3  # Reserved for future use
+
+    def add_score(self, points):
+        self.score += points
+
+    def reset(self):
+        self.score = 0
+
+    def check_new_high_score(self):
+        return self.score > self.high_score
+
+    def update_high_score(self, initials=""):
+        self.high_score = self.score
+        self.high_score_initials = initials
+        save_high_score(self.high_score, self.high_score_initials)
+
+
 def create_fonts():
     font_large = pygame.font.Font(None, 74)
     font_medium = pygame.font.Font(None, 36)
@@ -201,7 +222,7 @@ def main():
 
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 36)  # UI font
-    high_score, high_score_initials = load_high_score()
+    game_state = GameState()
 
     while True:  # Main game loop for restarts
         # Initialize sprite groups
@@ -220,7 +241,7 @@ def main():
         player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
         dt = 0
-        score = 0
+        game_state.reset()
         game_over = False
 
         while not game_over:  # Single game loop
@@ -245,7 +266,7 @@ def main():
                 for shot in shots:
                     if asteroid.collides_with(shot):
                         log_event("asteroid_shot")
-                        score += 100
+                        game_state.add_score(100)
                         shot.kill()
                         asteroid.split()
                         break  # Only one shot can hit an asteroid per frame
@@ -256,7 +277,13 @@ def main():
                 obj.draw(screen)
 
             # Draw UI overlay
-            draw_ui_overlay(screen, font, score, high_score, high_score_initials)
+            draw_ui_overlay(
+                screen,
+                font,
+                game_state.score,
+                game_state.high_score,
+                game_state.high_score_initials,
+            )
 
             pygame.display.flip()
 
@@ -264,22 +291,15 @@ def main():
             dt = clock.tick(60) / 1000.0
 
         # Update high score if current score is higher
-        new_high_score = False
-        if score > high_score:
-            high_score = score
-            new_high_score = True
-
-        # If new high score, get initials
-        if new_high_score:
-            initials = show_high_score_input(screen, clock, score)
+        if game_state.check_new_high_score():
+            initials = show_high_score_input(screen, clock, game_state.score)
             if initials:  # If not quit
-                high_score_initials = initials
-                save_high_score(high_score, high_score_initials)
+                game_state.update_high_score(initials)
             else:
-                high_score_initials = ""
+                game_state.high_score_initials = ""
 
         # Show game over screen and check if player wants to restart
-        if show_game_over(screen, clock, score):
+        if show_game_over(screen, clock, game_state.score):
             continue  # Restart the game
         else:
             break  # Quit the game
