@@ -9,6 +9,18 @@ from player import Player
 from shot import Shot
 
 
+def create_fonts():
+    font_large = pygame.font.Font(None, 74)
+    font_medium = pygame.font.Font(None, 36)
+    return font_large, font_medium
+
+
+def render_centered_text(screen, font, text, color, center_pos):
+    rendered_text = font.render(text, True, color)
+    text_rect = rendered_text.get_rect(center=center_pos)
+    screen.blit(rendered_text, text_rect)
+
+
 def draw_ui_overlay(screen, font, score, high_score, high_score_initials=""):
     # Current score
     score_text = font.render(f"Score: {score}", True, "white")
@@ -25,8 +37,7 @@ def draw_ui_overlay(screen, font, score, high_score, high_score_initials=""):
 
 
 def show_high_score_input(screen, clock, score):
-    font_large = pygame.font.Font(None, 74)
-    font_medium = pygame.font.Font(None, 36)
+    font_large, font_medium = create_fonts()
 
     initials = ["A", "A", "A"]
     selected_slot = 0
@@ -53,46 +64,47 @@ def show_high_score_input(screen, clock, score):
         screen.fill("black")
 
         # Title
-        new_high_text = font_large.render("NEW HIGH SCORE!", True, "white")
-        new_high_rect = new_high_text.get_rect(
-            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
+        render_centered_text(
+            screen,
+            font_large,
+            "NEW HIGH SCORE!",
+            "white",
+            (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100),
         )
-        screen.blit(new_high_text, new_high_rect)
 
         # Score
-        score_text = font_medium.render(f"Score: {score}", True, "white")
-        score_rect = score_text.get_rect(
-            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 40)
+        render_centered_text(
+            screen,
+            font_medium,
+            f"Score: {score}",
+            "white",
+            (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 40),
         )
-        screen.blit(score_text, score_rect)
 
         # Initials input
         for i, letter in enumerate(initials):
             color = "yellow" if i == selected_slot else "white"
-            letter_text = font_large.render(letter, True, color)
-            letter_rect = letter_text.get_rect(
-                center=(SCREEN_WIDTH // 2 - 60 + i * 60, SCREEN_HEIGHT // 2 + 40)
+            letter_x = SCREEN_WIDTH // 2 - 60 + i * 60
+            letter_y = SCREEN_HEIGHT // 2 + 40
+            render_centered_text(
+                screen, font_large, letter, color, (letter_x, letter_y)
             )
-            screen.blit(letter_text, letter_rect)
 
         # Instructions
-        instruct_text = font_medium.render(
+        render_centered_text(
+            screen,
+            font_medium,
             "Use LEFT/RIGHT to select, UP/DOWN to change, ENTER to confirm",
-            True,
             "white",
+            (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 120),
         )
-        instruct_rect = instruct_text.get_rect(
-            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 120)
-        )
-        screen.blit(instruct_text, instruct_rect)
 
         pygame.display.flip()
         clock.tick(60)
 
 
 def show_game_over(screen, clock, score):
-    font_large = pygame.font.Font(None, 74)
-    font_medium = pygame.font.Font(None, 36)
+    font_large, font_medium = create_fonts()
 
     while True:
         for event in pygame.event.get():
@@ -107,29 +119,38 @@ def show_game_over(screen, clock, score):
         screen.fill("black")
 
         # Game Over text
-        game_over_text = font_large.render("GAME OVER", True, "white")
-        game_over_rect = game_over_text.get_rect(
-            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 60)
+        render_centered_text(
+            screen,
+            font_large,
+            "GAME OVER",
+            "white",
+            (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 60),
         )
-        screen.blit(game_over_text, game_over_rect)
 
         # Score text
-        score_text = font_medium.render(f"Final Score: {score}", True, "white")
-        score_rect = score_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-        screen.blit(score_text, score_rect)
+        render_centered_text(
+            screen,
+            font_medium,
+            f"Final Score: {score}",
+            "white",
+            (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2),
+        )
 
         # Instructions
-        restart_text = font_medium.render("Press R to Restart", True, "white")
-        restart_rect = restart_text.get_rect(
-            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60)
+        render_centered_text(
+            screen,
+            font_medium,
+            "Press R to Restart",
+            "white",
+            (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60),
         )
-        screen.blit(restart_text, restart_rect)
-
-        quit_text = font_medium.render("Press Q to Quit", True, "white")
-        quit_rect = quit_text.get_rect(
-            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100)
+        render_centered_text(
+            screen,
+            font_medium,
+            "Press Q to Quit",
+            "white",
+            (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100),
         )
-        screen.blit(quit_text, quit_rect)
 
         pygame.display.flip()
         clock.tick(60)
