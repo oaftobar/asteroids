@@ -1,4 +1,7 @@
 import sys
+import os
+import json
+import platform
 
 import pygame
 from asteroid import Asteroid
@@ -7,6 +10,38 @@ from constants import SCREEN_WIDTH, SCREEN_HEIGHT, INITIAL_HIGH_SCORE
 from logger import log_event, log_state
 from player import Player
 from shot import Shot
+
+
+def get_high_score_path():
+    if platform.system() == "Windows":
+        app_data = os.environ.get("APPDATA", os.path.expanduser("~"))
+        base_dir = os.path.join(app_data, "asteroids")
+    else:
+        base_dir = os.path.expanduser("~/.asteroids")
+
+    os.makedirs(base_dir, exist_ok=True)
+    return os.path.join(base_dir, "highscore.json")
+
+
+def load_high_score():
+    path = get_high_score_path()
+    try:
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                data = json.load(f)
+                return data.get("score", 0), data.get("initials", "")
+    except (json.JSONDecodeError, IOError):
+        pass
+    return 0, ""
+
+
+def save_high_score(score, initials):
+    path = get_high_score_path()
+    try:
+        with open(path, "w") as f:
+            json.dump({"score": score, "initials": initials}, f)
+    except IOError:
+        pass
 
 
 def create_fonts():
@@ -166,8 +201,7 @@ def main():
 
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 36)  # UI font
-    high_score = INITIAL_HIGH_SCORE
-    high_score_initials = ""
+    high_score, high_score_initials = load_high_score()
 
     while True:  # Main game loop for restarts
         # Initialize sprite groups
@@ -240,6 +274,7 @@ def main():
             initials = show_high_score_input(screen, clock, score)
             if initials:  # If not quit
                 high_score_initials = initials
+                save_high_score(high_score, high_score_initials)
             else:
                 high_score_initials = ""
 
