@@ -243,6 +243,7 @@ def main():
         dt = 0
         game_state.reset()
         game_over = False
+        paused = False
 
         while not game_over:  # Single game loop
             # log_state()  # Disabled for performance
@@ -251,25 +252,29 @@ def main():
                 if event.type == pygame.QUIT:
                     game_over = True
                     break
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        paused = not paused
 
-            updatable.update(dt)
+            if not paused:
+                updatable.update(dt)
 
-            # Check player-asteroid collisions
-            for asteroid in asteroids:
-                if player.collides_with(asteroid):
-                    log_event("player_hit")
-                    game_over = True
-                    break
+                # Check player-asteroid collisions
+                for asteroid in asteroids:
+                    if player.collides_with(asteroid):
+                        log_event("player_hit")
+                        game_over = True
+                        break
 
-            # Check asteroid-shot collisions (optimized version)
-            for asteroid in asteroids:
-                for shot in shots:
-                    if asteroid.collides_with(shot):
-                        log_event("asteroid_shot")
-                        game_state.add_score(100)
-                        shot.kill()
-                        asteroid.split()
-                        break  # Only one shot can hit an asteroid per frame
+                # Check asteroid-shot collisions (optimized version)
+                for asteroid in asteroids:
+                    for shot in shots:
+                        if asteroid.collides_with(shot):
+                            log_event("asteroid_shot")
+                            game_state.add_score(100)
+                            shot.kill()
+                            asteroid.split()
+                            break  # Only one shot can hit an asteroid per frame
 
             screen.fill("black")
 
@@ -284,6 +289,17 @@ def main():
                 game_state.high_score,
                 game_state.high_score_initials,
             )
+
+            # Draw pause overlay if paused
+            if paused:
+                font_large, _ = create_fonts()
+                render_centered_text(
+                    screen,
+                    font_large,
+                    "PAUSED",
+                    "white",
+                    (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2),
+                )
 
             pygame.display.flip()
 
