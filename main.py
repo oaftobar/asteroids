@@ -11,6 +11,7 @@ from constants import (
     SCREEN_HEIGHT,
     INITIAL_HIGH_SCORE,
     PLAYER_STARTING_LIVES,
+    PLAYER_INVINCIBILITY_SECONDS,
 )
 from logger import log_event, log_state
 from player import Player
