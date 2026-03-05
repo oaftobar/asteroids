@@ -6,7 +6,12 @@ import platform
 import pygame
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, INITIAL_HIGH_SCORE
+from constants import (
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    INITIAL_HIGH_SCORE,
+    PLAYER_STARTING_LIVES,
+)
 from logger import log_event, log_state
 from player import Player
 from shot import Shot
@@ -48,13 +53,20 @@ class GameState:
     def __init__(self):
         self.score = 0
         self.high_score, self.high_score_initials = load_high_score()
-        self.lives = 3  # Reserved for future use
+        self.lives = PLAYER_STARTING_LIVES
 
     def add_score(self, points):
         self.score += points
 
     def reset(self):
         self.score = 0
+        self.lives = PLAYER_STARTING_LIVES
+
+    def lose_life(self):
+        self.lives -= 1
+
+    def is_alive(self):
+        return self.lives > 0
 
     def check_new_high_score(self):
         return self.score > self.high_score
@@ -77,7 +89,7 @@ def render_centered_text(screen, font, text, color, center_pos):
     screen.blit(rendered_text, text_rect)
 
 
-def draw_ui_overlay(screen, font, score, high_score, high_score_initials=""):
+def draw_ui_overlay(screen, font, score, high_score, high_score_initials="", lives=3):
     # Current score
     score_text = font.render(f"Score: {score}", True, "white")
     screen.blit(score_text, (10, 10))
@@ -90,6 +102,10 @@ def draw_ui_overlay(screen, font, score, high_score, high_score_initials=""):
     else:
         high_score_text = font.render(f"High Score: {high_score}", True, "white")
     screen.blit(high_score_text, (10, 50))
+
+    # Lives
+    lives_text = font.render(f"Lives: {lives}", True, "white")
+    screen.blit(lives_text, (10, 90))
 
 
 def show_high_score_input(screen, clock, score):
@@ -261,9 +277,18 @@ def main():
 
                 # Check player-asteroid collisions
                 for asteroid in asteroids:
-                    if player.collides_with(asteroid):
+                    if player.collides_with(asteroid) and not player.invincible:
                         log_event("player_hit")
-                        game_over = True
+                        game_state.lose_life()
+                        if game_state.is_alive():
+                            # Respawn player at center
+                            player.position = pygame.Vector2(
+                                SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2
+                            )
+                            player.invincible = True
+                            player.invincibility_timer = PLAYER_INVINCIBILITY_SECONDS
+                        else:
+                            game_over = True
                         break
 
                 # Check asteroid-shot collisions (optimized version)
@@ -288,6 +313,7 @@ def main():
                 game_state.score,
                 game_state.high_score,
                 game_state.high_score_initials,
+                game_state.lives,
             )
 
             # Draw pause overlay if paused
