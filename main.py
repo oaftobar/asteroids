@@ -292,15 +292,15 @@ def main():
                             game_over = True
                         break
 
-                # Check asteroid-shot collisions (optimized version)
-                for asteroid in asteroids:
-                    for shot in shots:
-                        if asteroid.collides_with(shot):
-                            log_event("asteroid_shot")
-                            game_state.add_score(100)
-                            shot.kill()
-                            asteroid.split()
-                            break  # Only one shot can hit an asteroid per frame
+                # Check asteroid-shot collisions using pygame's groupcollide
+                hits = pygame.sprite.groupcollide(asteroids, shots, False, True)
+                for asteroid, hit_shots in hits.items():
+                    if asteroid.collides_with(
+                        hit_shots[0]
+                    ):  # Verify with distance check
+                        log_event("asteroid_shot")
+                        game_state.add_score(100)
+                        asteroid.split()
 
             screen.fill("black")
 

@@ -42,14 +42,22 @@ class Player(CircleShape):
         self.wrap_around(SCREEN_WIDTH, SCREEN_HEIGHT)
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_w]:
-            self.move(dt)
-        if keys[pygame.K_s]:
-            self.move(-dt)
+        # Smooth rotation
         if keys[pygame.K_a]:
-            self.rotate(-dt)
+            self.rotation -= PLAYER_TURN_SPEED * dt
         if keys[pygame.K_d]:
-            self.rotate(dt)
+            self.rotation += PLAYER_TURN_SPEED * dt
+
+        # Smooth movement (allows diagonal)
+        move_direction = 0
+        if keys[pygame.K_w]:
+            move_direction += 1
+        if keys[pygame.K_s]:
+            move_direction -= 1
+
+        if move_direction != 0:
+            self.move(dt * move_direction)
+
         if keys[pygame.K_SPACE]:
             self.shoot()
 
