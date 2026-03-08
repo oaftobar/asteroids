@@ -1,4 +1,3 @@
-import sys
 import os
 import json
 import platform
@@ -294,13 +293,10 @@ def main():
 
                 # Check asteroid-shot collisions using pygame's groupcollide
                 hits = pygame.sprite.groupcollide(asteroids, shots, False, True)
-                for asteroid, hit_shots in hits.items():
-                    if asteroid.collides_with(
-                        hit_shots[0]
-                    ):  # Verify with distance check
-                        log_event("asteroid_shot")
-                        game_state.add_score(100)
-                        asteroid.split()
+                for asteroid in hits:
+                    log_event("asteroid_shot")
+                    game_state.add_score(100)
+                    asteroid.split()
 
             screen.fill("black")
 
