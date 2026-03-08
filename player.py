@@ -66,11 +66,11 @@ class Player(CircleShape):
             return
         self.shoot_timer = PLAYER_SHOOT_COOLDOWN_SECONDS
         # Spawn at triangle tip (forward point)
-        forward = pygame.Vector2(0, -1).rotate(self.rotation)
+        forward = pygame.Vector2(0, 1).rotate(self.rotation)
         spawn_pos = self.position + forward * self.radius
         shot = Shot(spawn_pos.x, spawn_pos.y)
         shot.velocity = forward * PLAYER_SHOOT_SPEED
 
     def move(self, dt):
-        forward = pygame.Vector2(0, -1).rotate(self.rotation)
+        forward = pygame.Vector2(0, 1).rotate(self.rotation)
         self.position += forward * PLAYER_SPEED * dt
