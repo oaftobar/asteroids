@@ -1,6 +1,8 @@
 import os
 import json
 import platform
+import array
+import math
 
 import pygame
 from asteroid import Asteroid
@@ -15,6 +17,37 @@ from constants import (
 from logger import log_event, log_state
 from player import Player
 from shot import Shot
+
+
+def generate_sound(frequency, duration, volume=0.3, wave_type="square"):
+    sample_rate = 44100
+    n_samples = int(sample_rate * duration)
+    samples = []
+
+    for i in range(n_samples):
+        t = i / sample_rate
+        value = 0
+
+        if wave_type == "square":
+            value = 1 if (t * frequency) % 1 < 0.5 else -1
+        elif wave_type == "sine":
+            value = math.sin(2 * math.pi * frequency * t)
+        elif wave_type == "sawtooth":
+            value = 2 * ((t * frequency) % 1) - 1
+
+        # Apply fade out
+        fade = 1 - (i / n_samples)
+        samples.append(int(32767 * volume * value * fade))
+
+    return pygame.mixer.Sound(buffer=array.array("h", samples))
+
+
+def load_sounds():
+    pygame.mixer.init()
+    shoot_sound = generate_sound(880, 0.1, 0.2, "square")  # High beep
+    explosion_sound = generate_sound(110, 0.2, 0.3, "sawtooth")  # Low buzz
+    death_sound = generate_sound(220, 0.3, 0.3, "sawtooth")  # Descending feel
+    return shoot_sound, explosion_sound, death_sound
 
 
 def get_high_score_path():
@@ -240,6 +273,9 @@ def main():
     font = pygame.font.Font(None, 36)  # UI font
     game_state = GameState()
 
+    # Load sounds
+    shoot_sound, explosion_sound, death_sound = load_sounds()
+
     while True:  # Main game loop for restarts
         # Initialize sprite groups
         updatable = pygame.sprite.Group()
@@ -254,7 +290,7 @@ def main():
 
         Player.containers = (updatable, drawable)
 
-        player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+        player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, shoot_sound)
 
         dt = 0
         game_state.reset()
@@ -279,6 +315,7 @@ def main():
                 for asteroid in asteroids:
                     if player.collides_with(asteroid) and not player.invincible:
                         log_event("player_hit")
+                        death_sound.play()
                         game_state.lose_life()
                         if game_state.is_alive():
                             # Respawn player at center
@@ -296,6 +333,7 @@ def main():
                 for asteroid in hits:
                     log_event("asteroid_shot")
                     game_state.add_score(100)
+                    explosion_sound.play()
                     asteroid.split()
 
             screen.fill("black")

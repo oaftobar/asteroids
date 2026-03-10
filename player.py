@@ -15,12 +15,13 @@ from shot import Shot
 
 
 class Player(CircleShape):
-    def __init__(self, x, y):
+    def __init__(self, x, y, shoot_sound=None):
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0
         self.shoot_timer = 0
         self.invincible = False
         self.invincibility_timer = 0.0
+        self.shoot_sound = shoot_sound
 
     def draw(self, screen):
         pygame.draw.polygon(screen, "white", self.triangle(), LINE_WIDTH)
@@ -70,6 +71,8 @@ class Player(CircleShape):
         spawn_pos = self.position + forward * self.radius
         shot = Shot(spawn_pos.x, spawn_pos.y)
         shot.velocity = forward * PLAYER_SHOOT_SPEED
+        if self.shoot_sound:
+            self.shoot_sound.play()
 
     def move(self, dt):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
