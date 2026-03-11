@@ -27,8 +27,8 @@ class Player(CircleShape):
         pygame.draw.polygon(screen, "white", self.triangle(), LINE_WIDTH)
 
     def triangle(self):
-        forward = pygame.Vector2(0, 1).rotate(self.rotation)
-        right = pygame.Vector2(0, 1).rotate(self.rotation + 90) * self.radius / 1.5
+        forward = pygame.Vector2(0, -1).rotate(self.rotation)
+        right = pygame.Vector2(0, -1).rotate(self.rotation + 90) * self.radius / 1.5
         a = self.position + forward * self.radius
         b = self.position - forward * self.radius - right
         c = self.position - forward * self.radius + right
@@ -67,7 +67,7 @@ class Player(CircleShape):
             return
         self.shoot_timer = PLAYER_SHOOT_COOLDOWN_SECONDS
         # Spawn at triangle tip (forward point)
-        forward = pygame.Vector2(0, 1).rotate(self.rotation)
+        forward = pygame.Vector2(0, -1).rotate(self.rotation)
         spawn_pos = self.position + forward * self.radius
         shot = Shot(spawn_pos.x, spawn_pos.y)
         shot.velocity = forward * PLAYER_SHOOT_SPEED
@@ -75,5 +75,5 @@ class Player(CircleShape):
             self.shoot_sound.play()
 
     def move(self, dt):
-        forward = pygame.Vector2(0, 1).rotate(self.rotation)
+        forward = pygame.Vector2(0, -1).rotate(self.rotation)
         self.position += forward * PLAYER_SPEED * dt
