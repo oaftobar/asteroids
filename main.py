@@ -13,6 +13,8 @@ from constants import (
     INITIAL_HIGH_SCORE,
     PLAYER_STARTING_LIVES,
     PLAYER_INVINCIBILITY_SECONDS,
+    FLASH_DURATION,
+    FLASH_COLOR,
 )
 from logger import log_event, log_state
 from player import Player
@@ -296,6 +298,7 @@ def main():
         game_state.reset()
         game_over = False
         paused = False
+        flash_timer = 0
 
         while not game_over:  # Single game loop
             # log_state()  # Disabled for performance
@@ -309,13 +312,19 @@ def main():
                         paused = not paused
 
             if not paused:
-                updatable.update(dt)
+                # Update asteroid field with score for difficulty scaling
+                asteroid_field.update(dt, game_state.score)
+                # Update all other sprites
+                for sprite in updatable:
+                    if sprite is not asteroid_field:
+                        sprite.update(dt)
 
                 # Check player-asteroid collisions
                 for asteroid in asteroids:
                     if player.collides_with(asteroid) and not player.invincible:
                         log_event("player_hit")
                         death_sound.play()
+                        flash_timer = FLASH_DURATION
                         game_state.lose_life()
                         if game_state.is_alive():
                             # Respawn player at center
@@ -361,6 +370,14 @@ def main():
                     "white",
                     (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2),
                 )
+
+            # Draw screen flash effect
+            if flash_timer > 0:
+                flash_timer -= dt
+                flash_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+                flash_surface.fill(FLASH_COLOR)
+                flash_surface.set_alpha(128)
+                screen.blit(flash_surface, (0, 0))
 
             pygame.display.flip()
 
